@@ -22,9 +22,11 @@ namespace Project
         bool _firstMove = true;
         Vector2 _lastPos;
         Vector3 _objectPos = new Vector3(0, 0, 0);
+
         float _rotationSpeed = 0.5f;
-        float wavingSpeed = 0.5f;
-        float jumpSpeed = 5;
+        float wavingSpeed = 0.2f;
+        float jumpSpeed = 2.3f;
+        float winkSpeed = 0.2f;
 
         public Window(GameWindowSettings gameWindowSettings, NativeWindowSettings nativeWindowSettings) : base(gameWindowSettings, nativeWindowSettings)
         {
@@ -42,10 +44,12 @@ namespace Project
             loadOlaf();
             loadEve();
             loadAlas();
-            loadSnow(70);
+            loadSnow(120);
             loadCloud();
-            loadTree();
+            loadTrees();
             loadRocks();
+            loadMountains();
+            loadFlowers();
 
             foreach (Asset3d _object3d in _objects3d)
                 _object3d.load(Constants.path + "shader.vert", Constants.path + "shader.frag", Size.X, Size.Y);
@@ -59,11 +63,22 @@ namespace Project
 
             GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
 
-            jump(_objects3d[0]);
+            //baymax
+            jump(_objects3d[0], 0.3f);
+            wink(_objects3d[0].Child[0], _objects3d[0].Child[1], 0.14f);
+
+            //olaf
+            jump2(_objects3d[1], 0.2f);
+            selfRotate2(_objects3d[1]);
+
+            //eve
+            jump(_objects3d[2].Child[0], 0.1f);
             waveEveHands();
-            selfRotate(_objects3d[1]);
+
             snowFlow(new Vector3(0, 0, 0));
             cloudRotate();
+            selfRotate(_objects3d[9].Child[0]);
+            selfRotate(_objects3d[9].Child[1]);
 
             foreach (Asset3d _object3d in _objects3d)
                 _object3d.render(3, _time, _camera.GetViewMatrix(), _camera.GetProjectionMatrix());
@@ -71,24 +86,46 @@ namespace Project
             SwapBuffers();
         }
 
-        public void jump(Asset3d obj)
+        private void jump(Asset3d obj, float jumpHeight)
         {
             float minHeight = obj.defaultPosition.Y;
-            float maxHeight = obj.defaultPosition.Y + 0.3f;
+            float maxHeight = obj.defaultPosition.Y + jumpHeight;
+            float posY = obj._centerPosition.Y;
 
-            if (obj._centerPosition.Y > maxHeight && jumpSpeed > 0)
-                jumpSpeed *= -1;
-
-            else if (obj._centerPosition.Y < minHeight && jumpSpeed < 0)
+            if (posY > maxHeight || posY < minHeight)
                 jumpSpeed *= -1;
 
             obj.createTranslation(new Vector3(0, 0.001f * jumpSpeed, 0));
         }
 
-        public void waveEveHands()
+        private void jump2(Asset3d obj, float jumpHeight)
         {
-            Asset3d patokan = _objects3d[2].Child[7];
-            Asset3d center = _objects3d[2].Child[5];
+            float minHeight = obj.defaultPosition.Y;
+            float maxHeight = obj.defaultPosition.Y + jumpHeight;
+            float posY = obj._centerPosition.Y;
+
+            if (posY > maxHeight || posY < minHeight)
+                jumpSpeed *= -1;
+
+            obj.createTranslation(new Vector3(0, 0.001f * jumpSpeed, 0));
+        }
+
+        private void wink(Asset3d obj1, Asset3d obj2, float minZ)
+        {
+            float maxZ = obj1.defaultPosition.Z;
+            float posZ = obj1._centerPosition.Z;
+
+            if (posZ > maxZ || posZ < minZ)
+                winkSpeed *= -1;
+
+            obj1.createTranslation(new Vector3(0, 0, 0.001f * winkSpeed));
+            obj2.createTranslation(new Vector3(0, 0, 0.001f * winkSpeed));
+        }
+
+        private void waveEveHands()
+        {
+            Asset3d patokan = _objects3d[2].Child[3];
+            Asset3d center = _objects3d[2].Child[1];
 
             float minHeight = 0.36f;
             float maxHeight = 0.36f;
@@ -96,25 +133,32 @@ namespace Project
             if (patokan._centerPosition.Y - center._centerPosition.Y > maxHeight || center._centerPosition.Y - patokan._centerPosition.Y > minHeight)
                 wavingSpeed *= -1;
 
-            _objects3d[2].Child[6].rotatede(center._centerPosition, Vector3.UnitZ, -wavingSpeed);
-            _objects3d[2].Child[7].rotatede(center._centerPosition, Vector3.UnitZ, wavingSpeed);
+            _objects3d[2].Child[2].rotatede(center._centerPosition, Vector3.UnitZ, -wavingSpeed);
+            _objects3d[2].Child[3].rotatede(center._centerPosition, Vector3.UnitZ, wavingSpeed);
             patokan.rotatede(center._centerPosition, Vector3.UnitZ, wavingSpeed);
         }
 
-        public void selfRotate(Asset3d obj)
+        private void selfRotate(Asset3d obj)
         {
             obj.rotatede(obj._centerPosition, obj._euler[1], 2f);
         }
 
-        public void cloudRotate()
+        public void selfRotate2(Asset3d obj)
         {
-            _objects3d[5].rotatede(new Vector3(0, 0, 0), Vector3.UnitY, 0.5f);
+            Vector3 pivot = new Vector3(_objects3d[0]._centerPosition.Y - 1.15f, 0, 0);
+            obj.rotatede(pivot, obj._euler[1], -0.15f);
         }
 
-        public void snowFlow(Vector3 pivot)
+        private void cloudRotate()
         {
-            _objects3d[4].rotatede(pivot, _objects3d[0]._euler[1], -1);
-            _objects3d[4].rotatede(pivot, _objects3d[0]._euler[2], 1);
+            _objects3d[5].Child[0].rotatede(new Vector3(0, 0, 0), Vector3.UnitY, 0.1f);
+            _objects3d[5].Child[1].rotatede(new Vector3(0, 0, 0), Vector3.UnitY, -0.1f);
+        }
+
+        private void snowFlow(Vector3 pivot)
+        {
+            _objects3d[4].rotatede(pivot, _objects3d[0]._euler[1], -0.5f);
+            _objects3d[4].rotatede(pivot, _objects3d[0]._euler[2], 0.5f);
         }
 
         protected override void OnResize(ResizeEventArgs e)
@@ -246,9 +290,11 @@ namespace Project
                 var mataKanan = new Asset3d(new Vector3(0, 0, 0));
                 mataKiri.createEllipsoid2(0.02f, 0.02f, 0.02f, -0.08f, 0.86f, 0.16f, 100, 100);
                 mataKanan.createEllipsoid2(0.02f, 0.02f, 0.02f, 0.08f, 0.86f, 0.16f, 100, 100);
+                mataKiri.defaultPosition = new Vector3(-0.08f, 0.86f, 0.16f);
+                mataKanan.defaultPosition = new Vector3(0.08f, 0.86f, 0.16f);
 
-                //garis mata
-                var garisMata = new Asset3d(new Vector3(0, 0, 0));
+            //garis mata
+            var garisMata = new Asset3d(new Vector3(0, 0, 0));
                 garisMata.createCuboid(0.15f, 0.008f, 0.02f, 0, 0.86f, 0.17f);
 
             // badan
@@ -326,20 +372,15 @@ namespace Project
             var kepalaBawah = new Asset3d(new Vector3(0.8f, 0.8f, 0.8f));
             olaf.createEllipsoid2(0.2f, 0.35f, 0.24f, 1.9f, 0.43f, 0, 100, 100);
             kepalaBawah.createEllipsoid2(0.25f, 0.15f, 0.225f, 1.9f, 0.4f, 0, 100, 100);
+            olaf.defaultPosition = new Vector3(1.9f, 0.43f, 0);
 
-                //rambut
-                var rambut1 = new Asset3d(new Vector3(0.47f, 0.266f, 0.168f));
-                var rambut2 = new Asset3d(new Vector3(0.47f, 0.266f, 0.168f));
-                var rambut3 = new Asset3d(new Vector3(0.47f, 0.266f, 0.168f));
-                var rambut4 = new Asset3d(new Vector3(0.47f, 0.266f, 0.168f));
-                var rambut5 = new Asset3d(new Vector3(0.47f, 0.266f, 0.168f));
-                rambut1.createCylinder(0.01f, 0.8f, 1.9f, 0.8f, 0);
-                rambut2.createCylinder(0.01f, 0.35f, 1.8f, 0.75f, 0);
-                rambut3.createCylinder(0.01f, 0.5f, 2f, 0.75f, 0);
-                rambut4.createCylinder(0.01f, 0.1f, 2.04f, 1.033f, 0);
-                rambut5.createCylinder(0.01f, 0.1f, 1.765f, 0.8f, 0);
-                rambut4.rotatede(rambut4._centerPosition, rambut4._euler[2], 135);
-                rambut5.rotatede(rambut5._centerPosition, rambut5._euler[2], 45);
+                var topimerah = new Asset3d(new Vector3(0.960f, 0.078f, 0.058f));
+                var ujungtopi = new Asset3d(new Vector3(0, 0, 0));
+                var topiputih = new Asset3d(new Vector3(1, 1, 1));
+                topimerah.createHalfEllipsoid(0.14f, 0.28f, 0.15f, 1.9f, 0.75f, 0, 100, 100);
+                ujungtopi.createEllipsoid2(0.05f, 0.05f, 0.045f, 1.97f, 1.06f, 0.01f, 100, 100);
+                topiputih.createCylinder3(0.146f, 0.155f, 0.03f, 1.9f, 0.75f, 0f, 100, 100);
+                topimerah.rotatede(topimerah._centerPosition, topimerah._euler[2], -10);
 
                 //dagu
                 var dagu = new Asset3d(new Vector3(0.8f, 0.8f, 0.8f));
@@ -455,11 +496,9 @@ namespace Project
             kakiKanan.createEllipsoid2(0.11f, 0.13f, 0.11f, 2.05f, -0.75f, 0, 100, 100); //kanan
 
             olaf.Child.Add(kepalaBawah);
-            olaf.Child.Add(rambut1);
-            olaf.Child.Add(rambut2);
-            olaf.Child.Add(rambut3);
-            olaf.Child.Add(rambut4);
-            olaf.Child.Add(rambut5);
+            olaf.Child.Add(topimerah);
+            olaf.Child.Add(ujungtopi);
+            olaf.Child.Add(topiputih);
             olaf.Child.Add(dagu);
             olaf.Child.Add(mulut);
             olaf.Child.Add(gigi);
@@ -475,29 +514,32 @@ namespace Project
             olaf.Child.Add(kancing1);
             olaf.Child.Add(kancing2);
             olaf.Child.Add(kancing3);
-            olaf.Child.Add(tanganKiri); //22
+            olaf.Child.Add(tanganKiri); 
             olaf.Child.Add(tanganKanan);
-            olaf.Child.Add(jariKiri1); //.
+            olaf.Child.Add(jariKiri1); 
             olaf.Child.Add(jariKiri2);
             olaf.Child.Add(jariKiri3);
             olaf.Child.Add(jariKiri4);
             olaf.Child.Add(jariKanan1);
-            olaf.Child.Add(jariKanan2); //.
+            olaf.Child.Add(jariKanan2); 
             olaf.Child.Add(jariKanan3);
             olaf.Child.Add(jariKanan4);
             olaf.Child.Add(kakiKiri);
             olaf.Child.Add(kakiKanan);
-            olaf.createTranslation(new Vector3(0, 0, 0.1f));
+
+            olaf.createTranslation(new Vector3(0.8f, 0.0f, 0));
             _objects3d.Add(olaf);
         }
 
         private void loadEve()
         {
             //kepala
-            var eve =  new Asset3d(new Vector3(0.9f, 0.9f, 0.9f));
+            var eve = new Asset3d();
+            var kepala = new Asset3d(new Vector3(0.9f, 0.9f, 0.9f));
             var kepalaBawah = new Asset3d(new Vector3(0.9f, 0.9f, 0.9f));
-            eve.createHalfEllipsoid(0.25f, 0.28f, 0.2f, -1.9f, 0.3f, 0.0f, 100, 100);
+            kepala.createHalfEllipsoid(0.25f, 0.28f, 0.2f, -1.9f, 0.3f, 0.0f, 100, 100);
             kepalaBawah.createEllipsoid2(0.25f, 0.13f, 0.2f, -1.9f, 0.3f, 0.0f, 100, 100);
+            kepala.defaultPosition = new Vector3(-1.9f, 0.3f, 0.0f);
 
                 //muka
                 var mukaAtas = new Asset3d(new Vector3(0.05f, 0.05f, 0.05f));
@@ -516,6 +558,7 @@ namespace Project
                     mataKanan.rotatede(mataKanan._centerPosition, mataKanan._euler[2], -13);
                     mataKiri.rotatede(mataKiri._centerPosition, mataKiri._euler[1], -16);
                     mataKanan.rotatede(mataKanan._centerPosition, mataKanan._euler[1], 14);
+                    mataKiri.defaultPosition = mataKiri._centerPosition;
 
             //badan
             var badan = new Asset3d(new Vector3(0.9f, 0.9f, 0.9f));
@@ -530,11 +573,12 @@ namespace Project
             tanganKiri.rotatede(tanganKiri._centerPosition, tanganKiri._euler[2], -50);
             tanganKanan.rotatede(tanganKanan._centerPosition, tanganKanan._euler[2], 20);
 
-            eve.Child.Add(kepalaBawah);
-            eve.Child.Add(mukaAtas);
-            eve.Child.Add(mukaBawah);
-            eve.Child.Add(mataKiri);
-            eve.Child.Add(mataKanan);
+            kepala.Child.Add(kepalaBawah);
+            kepala.Child.Add(mukaAtas);
+            kepala.Child.Add(mukaBawah);
+            kepala.Child.Add(mataKiri);
+            kepala.Child.Add(mataKanan);
+            eve.Child.Add(kepala);
             eve.Child.Add(badan);
             eve.Child.Add(tanganKiri);
             eve.Child.Add(tanganKanan);
@@ -546,16 +590,20 @@ namespace Project
             //atas
             var alas = new Asset3d(new Vector3(1, 1, 1));
             var alasAtas2 = new Asset3d(new Vector3(1, 1, 1));
-            alas.createCylinder3(2.3f, 1.9f, 0.03f, 0, -0.85f, 0.0f, 100, 100);
-            alasAtas2.createEllipsoid2(2.3f, 0, 1.9f, 0, -0.85f, 0.0f, 100, 100);
+            alas.createCylinder3(3.3f, 2.9f, 0.03f, 0, -0.85f, 0.0f, 100, 100);
+            alasAtas2.createEllipsoid2(3.3f, 0, 2.9f, 0, -0.85f, 0.0f, 100, 100);
 
-            //bawah
-            var alasBawah = new Asset3d(new Vector3(0.47f, 0.266f, 0.168f));
-            alasBawah.createHalfEllipsoid(2.5f, 0.5f, 2.1f, 0, -0.8f, 0.0f, 100, 100);
-            alasBawah.rotatede(alasBawah._centerPosition, alasBawah._euler[0], 180);
+            //tengah
+            var alasTengah = new Asset3d(new Vector3(0.47f, 0.266f, 0.168f));
+            alasTengah.createHalfEllipsoid(3.5f, 0.5f, 3.1f, 0, -0.8f, 0.0f, 100, 100);
+            alasTengah.rotatede(alasTengah._centerPosition, alasTengah._euler[0], 180);
+
+            var alasBawah = new Asset3d(new Vector3(1, 1, 1));
+            alasBawah.createEllipsoid2(12.9f, 0.5f, 11.9f, 0, -1.25f, -8.5f, 100, 100);
 
             alas.Child.Add(alasAtas2);
-            alas.Child.Add(alasBawah);
+            alas.Child.Add(alasTengah);
+            alas.Child.Add (alasBawah);
             _objects3d.Add(alas);
         }
 
@@ -588,19 +636,36 @@ namespace Project
 
         private void loadCloud()
         {
-            var cloud = new Asset3d(new Vector3(1, 1, 1));
+            var cloudkiri = new Asset3d();
+            var cloudkanan = new Asset3d();
+            var cloud = new Asset3d();
+            var cloud1 = new Asset3d(new Vector3(1, 1, 1));
             var cloud2 = new Asset3d(new Vector3(1, 1, 1));
             var cloud3 = new Asset3d(new Vector3(1, 1, 1));
-            cloud.createEllipsoid2(1.2f, 0.8f, 1, 0, 3f, -5.5f, 100, 100);
-            cloud2.createEllipsoid2(1.5f, 0.5f, 0.8f, -1.5f, 3, -5.5f, 100, 100);
-            cloud3.createEllipsoid2(1.3f, 0.6f, 0.7f, 1.5f, 3, -5.5f, 100, 100);
+            var cloud4 = new Asset3d(new Vector3(1, 1, 1));
+            var cloud5 = new Asset3d(new Vector3(1, 1, 1));
+            var cloud6 = new Asset3d(new Vector3(1, 1, 1));
+            cloud1.createEllipsoid2(1.2f, 0.8f, 1, -1, 3f, -5.5f, 100, 100);
+            cloud2.createEllipsoid2(1.5f, 0.5f, 0.8f, -2.5f, 3, -5.5f, 100, 100);
+            cloud3.createEllipsoid2(1.3f, 0.6f, 0.7f, 0.5f, 3, -5.5f, 100, 100);
+            cloud4.createEllipsoid2(1.2f, 0.8f, 1, 1, 7f, -5.5f, 100, 100);
+            cloud5.createEllipsoid2(1.5f, 0.5f, 0.8f, -0.5f, 7, -5.5f, 100, 100);
+            cloud6.createEllipsoid2(1.3f, 0.6f, 0.7f, 2.5f, 7, -5.5f, 100, 100);
 
-            cloud.Child.Add(cloud2);
-            cloud.Child.Add(cloud3);
+            cloudkiri.Child.Add(cloud1);
+            cloudkiri.Child.Add(cloud2);
+            cloudkiri.Child.Add(cloud3);
+            cloudkanan.Child.Add(cloud4);
+            cloudkanan.Child.Add(cloud5);
+            cloudkanan.Child.Add(cloud6);
+
+            cloud.Child.Add(cloudkiri);
+            cloud.Child.Add(cloudkanan);
+
             _objects3d.Add(cloud);
         }
 
-        private void loadTree()
+        private void loadTrees()
         {
             var trees = new Asset3d();
 
@@ -646,9 +711,9 @@ namespace Project
             tree3.Child.Add(daun2Tree3);
             tree3.Child.Add(daun3Tree3);
 
-            tree1.createTranslation(new Vector3(-1.3f,0,0));
-            tree1.createTranslation(new Vector3(0, 0, -0.2f));
-            tree3.createTranslation(new Vector3(1.3f, 0, 0));
+            tree1.createTranslation(new Vector3(-1.2f,0.1f,0));
+            tree2.createTranslation(new Vector3(0, 0.2f, -0.4f));
+            tree3.createTranslation(new Vector3(1.2f, 0.1f, 0));
 
             trees.Child.Add(tree1);
             trees.Child.Add(tree2);
@@ -740,6 +805,120 @@ namespace Project
             rocks.Child.Add(rock22);
 
             _objects3d.Add(rocks);
+        }
+
+        private void loadMountains()
+        {
+            var mountains = new Asset3d();
+
+            var mount1 = new Asset3d(new Vector3(1, 1, 1));
+            mount1.createHalfEllipsoid(4.4f, 9.5f, 3.43f, 0, -0.9f, -6.6f, 100, 100);
+
+            var mount2 = new Asset3d(new Vector3(0.96f, 0.96f, 0.96f));
+            mount2.createHalfEllipsoid(2.4f, 5.5f, 3.43f, 5f, -0.9f, -4.6f, 100, 100);
+
+            var mount3 = new Asset3d(new Vector3(0.96f, 0.96f, 0.96f));
+            mount3.createHalfEllipsoid(2.4f, 5.5f, 3.43f, -5f, -0.9f, -4.6f, 100, 100);
+
+
+            mountains.Child.Add(mount1);
+            mountains.Child.Add(mount2);
+            mountains.Child.Add(mount3);
+
+            _objects3d.Add(mountains);
+
+        }
+
+        private void loadFlowers()
+        {
+            var flowers = new Asset3d();
+
+            //Bunga1
+            //Bulatan tengah
+            var bunga1 = new Asset3d(new Vector3(1, 1, 1));
+            bunga1.createEllipsoid2(0.15f, 0.15f, 0.1f, -2.3f, -0.3f, 1, 100, 100);
+
+            //Kelopak1
+            var kelopak1 = new Asset3d(new Vector3(1, 0, 1));
+            kelopak1.createHalfEllipsoid(0.1f, 0.2f, 0.09f, -2.3f, -0.21f, 1f, 100, 100);
+
+            //Kelopak2
+            var kelopak2 = new Asset3d(new Vector3(1, 0, 1));
+            kelopak2.createHalfEllipsoid(0.1f, 0.2f, 0.09f, -2.4f, -0.28f, 1f, 100, 100);
+            kelopak2.rotatede(kelopak2._centerPosition, kelopak2._euler[2], 75);
+
+            //Kelopak3
+            var kelopak3 = new Asset3d(new Vector3(1, 0, 1));
+            kelopak3.createHalfEllipsoid(0.1f, 0.2f, 0.09f, -2.35f, -0.4f, 1f, 100, 100);
+            kelopak3.rotatede(kelopak3._centerPosition, kelopak3._euler[2], 145);
+
+            //Kelopak4
+            var kelopak4 = new Asset3d(new Vector3(1, 0, 1));
+            kelopak4.createHalfEllipsoid(0.1f, 0.2f, 0.09f, -2.23f, -0.4f, 1f, 100, 100);
+            kelopak4.rotatede(kelopak4._centerPosition, kelopak4._euler[2], 230);
+
+            //Kelopak4
+            var kelopak5 = new Asset3d(new Vector3(1, 0, 1));
+            kelopak5.createHalfEllipsoid(0.1f, 0.2f, 0.09f, -2.19f, -0.27f, 1f, 100, 100);
+            kelopak5.rotatede(kelopak5._centerPosition, kelopak5._euler[2], 295);
+
+            //Tangkai
+            var tangkai = new Asset3d(new Vector3(0.47f, 0.266f, 0.168f));
+            tangkai.createCylinder(0.02f, 0.6f, -2.3f, -0.62f, 1f);
+            tangkai.rotatede(tangkai._centerPosition, tangkai._euler[2], 0);
+
+            //Bunga2
+            //Bulatan Tengah
+            var bunga2 = new Asset3d(new Vector3(1, 1, 1));
+            bunga2.createEllipsoid2(0.15f, 0.15f, 0.1f, 2.2f, -0.3f, 1, 100, 100);
+
+            //Kelopak6
+            var kelopak6 = new Asset3d(new Vector3(1, 0, 0));
+            kelopak6.createHalfEllipsoid(0.1f, 0.2f, 0.09f, 2.2f, -0.21f, 1f, 100, 100);
+
+            //Kelopak7
+            var kelopak7 = new Asset3d(new Vector3(1, 0, 0));
+            kelopak7.createHalfEllipsoid(0.1f, 0.2f, 0.09f, 2.1f, -0.28f, 1f, 100, 100);
+            kelopak7.rotatede(kelopak7._centerPosition, kelopak7._euler[2], 75);
+
+            //Kelopak8
+            var kelopak8 = new Asset3d(new Vector3(1, 0, 0));
+            kelopak8.createHalfEllipsoid(0.1f, 0.2f, 0.09f, 2.15f, -0.38f, 1f, 100, 100);
+            kelopak8.rotatede(kelopak8._centerPosition, kelopak8._euler[2], 145);
+
+            //Kelopak9
+            var kelopak9 = new Asset3d(new Vector3(1, 0, 0));
+            kelopak9.createHalfEllipsoid(0.1f, 0.2f, 0.09f, 2.27f, -0.39f, 1f, 100, 100);
+            kelopak9.rotatede(kelopak9._centerPosition, kelopak9._euler[2], 230);
+
+            //Kelopak10
+            var kelopak10 = new Asset3d(new Vector3(1, 0, 0));
+            kelopak10.createHalfEllipsoid(0.1f, 0.2f, 0.09f, 2.31f, -0.27f, 1f, 100, 100);
+            kelopak10.rotatede(kelopak10._centerPosition, kelopak10._euler[2], 293);
+
+            //Tangkai2
+            var tangkai2 = new Asset3d(new Vector3(0.47f, 0.266f, 0.168f));
+            tangkai2.createCylinder(0.02f, 0.6f, 2.21f, -0.62f, 1f);
+            tangkai2.rotatede(tangkai2._centerPosition, tangkai2._euler[2], 0);
+
+
+
+            bunga1.Child.Add(kelopak1);
+            bunga1.Child.Add(kelopak2);
+            bunga1.Child.Add(kelopak3);
+            bunga1.Child.Add(kelopak4);
+            bunga1.Child.Add(kelopak5);
+            bunga1.Child.Add(tangkai);
+            bunga2.Child.Add(kelopak6);
+            bunga2.Child.Add(kelopak7);
+            bunga2.Child.Add(kelopak8);
+            bunga2.Child.Add(kelopak9);
+            bunga2.Child.Add(kelopak10);
+            bunga2.Child.Add(tangkai2);
+
+            flowers.Child.Add(bunga1);
+            flowers.Child.Add(bunga2);
+            _objects3d.Add(flowers);
         }
     }
 }
