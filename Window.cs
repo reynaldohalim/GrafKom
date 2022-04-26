@@ -43,6 +43,9 @@ namespace Project
             loadEve();
             loadAlas();
             loadSnow(70);
+            loadCloud();
+            loadTree();
+            loadRocks();
 
             foreach (Asset3d _object3d in _objects3d)
                 _object3d.load(Constants.path + "shader.vert", Constants.path + "shader.frag", Size.X, Size.Y);
@@ -56,26 +59,18 @@ namespace Project
 
             GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
 
-            Vector3 pivot = new Vector3(0,0,0);
-
             jump(_objects3d[0]);
             waveEveHands();
             selfRotate(_objects3d[1]);
-
-            //snow flow
-            _objects3d[4].rotatede(pivot, _objects3d[0]._euler[1], -1);
-            _objects3d[4].rotatede(pivot, _objects3d[0]._euler[2], 1);
+            snowFlow(new Vector3(0, 0, 0));
+            cloudRotate();
 
             foreach (Asset3d _object3d in _objects3d)
-            {
-                //_object3d.rotatede(pivot, _objects3d[0]._euler[1], 2);
                 _object3d.render(3, _time, _camera.GetViewMatrix(), _camera.GetProjectionMatrix());
-            }
 
             SwapBuffers();
         }
 
-        
         public void jump(Asset3d obj)
         {
             float minHeight = obj.defaultPosition.Y;
@@ -90,7 +85,6 @@ namespace Project
             obj.createTranslation(new Vector3(0, 0.001f * jumpSpeed, 0));
         }
 
-        
         public void waveEveHands()
         {
             Asset3d patokan = _objects3d[2].Child[7];
@@ -110,6 +104,17 @@ namespace Project
         public void selfRotate(Asset3d obj)
         {
             obj.rotatede(obj._centerPosition, obj._euler[1], 2f);
+        }
+
+        public void cloudRotate()
+        {
+            _objects3d[5].rotatede(new Vector3(0, 0, 0), Vector3.UnitY, 0.5f);
+        }
+
+        public void snowFlow(Vector3 pivot)
+        {
+            _objects3d[4].rotatede(pivot, _objects3d[0]._euler[1], -1);
+            _objects3d[4].rotatede(pivot, _objects3d[0]._euler[2], 1);
         }
 
         protected override void OnResize(ResizeEventArgs e)
@@ -482,6 +487,7 @@ namespace Project
             olaf.Child.Add(jariKanan4);
             olaf.Child.Add(kakiKiri);
             olaf.Child.Add(kakiKanan);
+            olaf.createTranslation(new Vector3(0, 0, 0.1f));
             _objects3d.Add(olaf);
         }
 
@@ -580,5 +586,160 @@ namespace Project
             return (float)val;
         }
 
+        private void loadCloud()
+        {
+            var cloud = new Asset3d(new Vector3(1, 1, 1));
+            var cloud2 = new Asset3d(new Vector3(1, 1, 1));
+            var cloud3 = new Asset3d(new Vector3(1, 1, 1));
+            cloud.createEllipsoid2(1.2f, 0.8f, 1, 0, 3f, -5.5f, 100, 100);
+            cloud2.createEllipsoid2(1.5f, 0.5f, 0.8f, -1.5f, 3, -5.5f, 100, 100);
+            cloud3.createEllipsoid2(1.3f, 0.6f, 0.7f, 1.5f, 3, -5.5f, 100, 100);
+
+            cloud.Child.Add(cloud2);
+            cloud.Child.Add(cloud3);
+            _objects3d.Add(cloud);
+        }
+
+        private void loadTree()
+        {
+            var trees = new Asset3d();
+
+            var tree1 = new Asset3d(new Vector3(0.701f, 0.349f, 0.258f));
+            var daun1Tree1 = new Asset3d(new Vector3(0.803f, 0.933f, 0.749f));
+            var daun2Tree1 = new Asset3d(new Vector3(0.501f, 0.862f, 0.337f));
+            var daun3Tree1 = new Asset3d(new Vector3(0.341f, 0.556f, 0.243f));
+
+            tree1.createCylinder3(0.1f, 0.1f, 1, 0, 0.5f, -1.6f, 100, 100);
+            daun1Tree1.createHalfEllipsoid(0.4f, 3.5f, 0.43f, 0, 0.3f, -1.6f, 100, 100);
+            daun2Tree1.createHalfEllipsoid(0.7f, 2f, 0.73f, 0, 0.5f, -1.6f, 100, 100);
+            daun3Tree1.createHalfEllipsoid(1, 1.5f, 1, 0, -0.2f, -1.6f, 100, 100);
+
+            var tree2 = new Asset3d(new Vector3(0.701f, 0.349f, 0.258f));
+            var daun1Tree2 = new Asset3d(new Vector3(0.803f, 0.933f, 0.749f));
+            var daun2Tree2 = new Asset3d(new Vector3(0.501f, 0.862f, 0.337f));
+            var daun3Tree2 = new Asset3d(new Vector3(0.341f, 0.556f, 0.243f));
+
+            tree2.createCylinder3(0.1f, 0.1f, 1, 0, 0.5f, -1.6f, 100, 100);
+            daun1Tree2.createHalfEllipsoid(0.4f, 3.5f, 0.43f, 0, 0.3f, -1.6f, 100, 100);
+            daun2Tree2.createHalfEllipsoid(0.7f, 2f, 0.73f, 0, 0.5f, -1.6f, 100, 100);
+            daun3Tree2.createHalfEllipsoid(1, 1.5f, 1, 0, -0.2f, -1.6f, 100, 100);
+
+            var tree3 = new Asset3d(new Vector3(0.701f, 0.349f, 0.258f));
+            var daun1Tree3 = new Asset3d(new Vector3(0.803f, 0.933f, 0.749f));
+            var daun2Tree3 = new Asset3d(new Vector3(0.501f, 0.862f, 0.337f));
+            var daun3Tree3 = new Asset3d(new Vector3(0.341f, 0.556f, 0.243f));
+
+            tree3.createCylinder3(0.1f, 0.1f, 1, 0, 0.5f, -1.6f, 100, 100);
+            daun1Tree3.createHalfEllipsoid(0.4f, 3.5f, 0.43f, 0, 0.3f, -1.6f, 100, 100);
+            daun2Tree3.createHalfEllipsoid(0.7f, 2f, 0.73f, 0, 0.5f, -1.6f, 100, 100);
+            daun3Tree3.createHalfEllipsoid(1, 1.5f, 1, 0, -0.2f, -1.6f, 100, 100);
+
+            tree1.Child.Add(daun1Tree1);
+            tree1.Child.Add(daun2Tree1);
+            tree1.Child.Add(daun3Tree1);
+
+            tree2.Child.Add(daun1Tree2);
+            tree2.Child.Add(daun2Tree2);
+            tree2.Child.Add(daun3Tree2);
+
+            tree3.Child.Add(daun1Tree3);
+            tree3.Child.Add(daun2Tree3);
+            tree3.Child.Add(daun3Tree3);
+
+            tree1.createTranslation(new Vector3(-1.3f,0,0));
+            tree1.createTranslation(new Vector3(0, 0, -0.2f));
+            tree3.createTranslation(new Vector3(1.3f, 0, 0));
+
+            trees.Child.Add(tree1);
+            trees.Child.Add(tree2);
+            trees.Child.Add(tree3);
+
+            _objects3d.Add(trees);
+        }
+
+        private void loadRocks()
+        {
+            var rocks = new Asset3d(new Vector3(0.6f, 0.6f, 0.6f));
+            var rock1 = new Asset3d(new Vector3(0.6f, 0.6f, 0.6f));
+            var rock2 = new Asset3d(new Vector3(0.6f, 0.6f, 0.6f));
+            var rock3 = new Asset3d(new Vector3(0.6f, 0.6f, 0.6f));
+            var rock4 = new Asset3d(new Vector3(0.6f, 0.6f, 0.6f));
+            var rock5 = new Asset3d(new Vector3(0.6f, 0.6f, 0.6f));
+            var rock6 = new Asset3d(new Vector3(0.6f, 0.6f, 0.6f));
+            var rock7 = new Asset3d(new Vector3(0.6f, 0.6f, 0.6f));
+            var rock8 = new Asset3d(new Vector3(0.6f, 0.6f, 0.6f));
+            var rock9 = new Asset3d(new Vector3(0.6f, 0.6f, 0.6f));
+            var rock10 = new Asset3d(new Vector3(0.6f, 0.6f, 0.6f));
+            var rock11 = new Asset3d(new Vector3(0.6f, 0.6f, 0.6f));
+            var rock12 = new Asset3d(new Vector3(0.6f, 0.6f, 0.6f));
+            var rock13 = new Asset3d(new Vector3(0.6f, 0.6f, 0.6f));
+            var rock14 = new Asset3d(new Vector3(0.6f, 0.6f, 0.6f));
+            var rock15 = new Asset3d(new Vector3(0.6f, 0.6f, 0.6f));
+            var rock16 = new Asset3d(new Vector3(0.6f, 0.6f, 0.6f));
+            var rock17 = new Asset3d(new Vector3(0.6f, 0.6f, 0.6f));
+            var rock18 = new Asset3d(new Vector3(0.6f, 0.6f, 0.6f));
+            var rock19 = new Asset3d(new Vector3(0.6f, 0.6f, 0.6f));
+            var rock20 = new Asset3d(new Vector3(0.6f, 0.6f, 0.6f));
+            var rock21 = new Asset3d(new Vector3(0.6f, 0.6f, 0.6f));
+            var rock22 = new Asset3d(new Vector3(0.6f, 0.6f, 0.6f));
+
+            rocks.createEllipsoid2(0.2f, 0.15f, 0.18f, 0.4f, -0.7f, 1.78f, 100, 100);
+            rock1.createEllipsoid2(0.2f, 0.15f, 0.18f, 0, -0.7f, 1.8f, 100, 100);
+            rock2.createEllipsoid2(0.2f, 0.15f, 0.18f, -0.4f, -0.7f, 1.8f, 100, 100);
+            rock3.createEllipsoid2(0.2f, 0.15f, 0.18f, -0.77f, -0.7f, 1.7f, 100, 100);
+            rock4.createEllipsoid2(0.2f, 0.15f, 0.18f, -1.12f, -0.7f, 1.55f, 100, 100);
+            rock5.createEllipsoid2(0.2f, 0.15f, 0.18f, -1.44f, -0.7f, 1.35f, 100, 100);
+            rock6.createEllipsoid2(0.2f, 0.15f, 0.18f, -1.67f, -0.7f, 1.1f, 100, 100);
+            rock7.createEllipsoid2(0.2f, 0.15f, 0.18f, 0.8f, -0.7f, 1.7f, 100, 100);
+            rock8.createEllipsoid2(0.2f, 0.15f, 0.18f, 1.4f, -0.7f, 1.33f, 100, 100);
+            rock9.createEllipsoid2(0.2f, 0.15f, 0.18f, 1.1f, -0.7f, 1.55f, 100, 100);
+            rock10.createEllipsoid2(0.2f, 0.15f, 0.18f, -1.87f, -0.7f, 0.8f, 100, 100);
+            rock11.createEllipsoid2(0.2f, 0.15f, 0.18f, 1.65f, -0.7f, 1.1f, 100, 100);
+            rock12.createEllipsoid2(0.2f, 0.15f, 0.18f, -0.03f, -0.7f, 1.3f, 100, 100);
+            rock13.createEllipsoid2(0.2f, 0.15f, 0.18f, -0.03f, -0.7f, 0.9f, 100, 100);
+            rock14.createEllipsoid2(0.2f, 0.15f, 0.18f, -0.03f, -0.7f, 0.4f, 100, 100);
+            rock15.createEllipsoid2(0.2f, 0.15f, 0.18f, 0.35f, -0.7f, 0.45f, 100, 100);
+            rock16.createEllipsoid2(0.2f, 0.15f, 0.18f, 0.7f, -0.75f, 0.48f, 100, 100);
+            rock17.createEllipsoid2(0.2f, 0.15f, 0.18f, 1.07f, -0.75f, 0.65f, 100, 100);
+            rock18.createEllipsoid2(0.2f, 0.15f, 0.18f, 1.45f, -0.75f, 0.82f, 100, 100);
+            rock19.createEllipsoid2(0.2f, 0.15f, 0.18f, -0.39f, -0.7f, 0.47f, 100, 100);
+            rock20.createEllipsoid2(0.2f, 0.15f, 0.18f, -0.75f, -0.7f, 0.54f, 100, 100);
+            rock21.createEllipsoid2(0.2f, 0.15f, 0.18f, -1.1f, -0.7f, 0.58f, 100, 100);
+            rock22.createEllipsoid2(0.2f, 0.15f, 0.18f, -1.5f, -0.7f, 0.62f, 100, 100);
+
+            rock2.rotatede(rock2._centerPosition, rock2._euler[0], 180);
+            rock2.rotatede(rock2._centerPosition, rock2._euler[0], 180);
+            rock2.rotatede(rock2._centerPosition, rock2._euler[0], 180);
+            rock2.rotatede(rock2._centerPosition, rock2._euler[0], 180);
+            rock3.rotatede(rock3._centerPosition, rock3._euler[0], 170);
+            rock4.rotatede(rock4._centerPosition, rock4._euler[0], 175);
+            rock5.rotatede(rock5._centerPosition, rock5._euler[0], 175);
+            rock6.rotatede(rock6._centerPosition, rock6._euler[0], 175);
+
+            rocks.Child.Add(rock1);
+            rocks.Child.Add(rock2);
+            rocks.Child.Add(rock3);
+            rocks.Child.Add(rock4);
+            rocks.Child.Add(rock5);
+            rocks.Child.Add(rock6);
+            rocks.Child.Add(rock7);
+            rocks.Child.Add(rock8);
+            rocks.Child.Add(rock9);
+            rocks.Child.Add(rock10);
+            rocks.Child.Add(rock11);
+            rocks.Child.Add(rock12);
+            rocks.Child.Add(rock13);
+            rocks.Child.Add(rock14);
+            rocks.Child.Add(rock15);
+            rocks.Child.Add(rock16);
+            rocks.Child.Add(rock17);
+            rocks.Child.Add(rock18);
+            rocks.Child.Add(rock19);
+            rocks.Child.Add(rock20);
+            rocks.Child.Add(rock21);
+            rocks.Child.Add(rock22);
+
+            _objects3d.Add(rocks);
+        }
     }
 }

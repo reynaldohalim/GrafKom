@@ -9,7 +9,7 @@ namespace Project
         {
             var nativeWindowSettings = new NativeWindowSettings()
             {
-                Size = new OpenTK.Mathematics.Vector2i(500, 500),
+                Size = new OpenTK.Mathematics.Vector2i(1000, 1000),
                 Title = "Project GrafKom"
             };
 
